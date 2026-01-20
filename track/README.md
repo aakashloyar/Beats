@@ -247,5 +247,3 @@ Important points
 
 
 
-# Step1 
--> Creating the migrations
