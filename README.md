@@ -361,24 +361,6 @@ cheers
   -> playback 
 
 
-functional requirements
-
--> quiz application 
--> question/options
--> q1 q2 
--> 4 option india
--> 4 option india 
-
-
-option table -> india stored 
-[a, b ,c ,d]
-
-artists
--> ak 
--> ak 
-
--> elastic search 
--> inverted index
 
 
 
@@ -388,15 +370,58 @@ artists
 
 # Project planning 
 
-1. Ingestion Service
-2. Track Service 
+1. Track Service
+2. Ingestion Service 
 3. Encoding Service
 4. Playback Service 
 
 -> Here it is sufficient 
 -> this is stage1 of our project
 -> then we will do other stages
--> thinking to complete it in 1 week 
--> work hard baby
 
+
+BEATS-backend/
+├── track-service/
+├── playback-service/
+├── user-service/
+├── auth-service/
+├── playlist-service/
+├── recommendation-service/
+├── discovery-service/
+├── ingestion-service/
+├── encoding-service/
+├── proto/                 # gRPC contracts (shared)
+├── libs/                  # shared infra libs (auth, logging)
+├── deploy/                # k8s, terraform, helm
+└── README.md
+
+-> we will follow the hexagonal architecture 
+
+
+track-service/
+├── cmd/
+│   └── server/
+│       └── main.go
+├── internal/
+│   ├── domain/
+│   │   ├── 
+│   │   └── 
+│   ├── application/
+│   │   ├── ports/
+│   │   │   ├── in/
+│   │   │   └── out/
+│   │   └── service/
+│   ├── adapters/
+│   │   ├── in/
+│   │   │   ├── http/
+│   │   │   └── grpc/
+│   │   └── out/
+│   │       ├── postgres/
+│   │       ├── redis/
+│   │       └── kafka/
+│   ├── config/
+│   └── observability/
+├── migrations/
+├── go.mod
+└── go.sum
 
