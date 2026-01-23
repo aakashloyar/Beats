@@ -412,13 +412,15 @@ track-service/
 │   │   │   └── out/
 │   │   └── service/
 │   ├── adapters/
-│   │   ├── in/
+│   │   ├── in/ -> incoming requests
 │   │   │   ├── http/
 │   │   │   └── grpc/
-│   │   └── out/
+│   │   │   └── kafka-consumer/
+│   │   └── out/ -> outgoing dependencies
 │   │       ├── postgres/
 │   │       ├── redis/
-│   │       └── kafka/
+│   │       └── kafka-producer/
+│   │       └── S3-CDN/
 │   ├── config/
 │   └── observability/
 ├── migrations/
