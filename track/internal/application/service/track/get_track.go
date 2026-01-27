@@ -16,10 +16,10 @@ func NewGetTrackService(trackRepo out.TrackRepository) in.GetTrackService {
 		trackRepo: trackRepo,
 	}
 }
-func (s *GetTrackService) Execute(ctx context.Context, trackId string) (*domain.Track, error) {
+func (s *GetTrackService) Execute(ctx context.Context, trackId string) (domain.Track, error) {
 	x,err:=s.trackRepo.FindById(trackId)
 	if err!=nil {
-		return nil,err
+		return domain.Track{},err
 	}
 	return x,nil
 }
