@@ -10,6 +10,9 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 		case http.MethodPost: {
 			h.CreateTrack(w,r)
 		}
+		case http.MethodGet: {
+			h.ListTracks(w, r)
+		}
 		default: {
 			http.Error(w,"method not allowed",http.StatusMethodNotAllowed)
 		}
