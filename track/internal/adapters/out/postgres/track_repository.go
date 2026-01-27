@@ -3,14 +3,14 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/aakashloyar/beats/track/internal/application/ports/out"
 	"github.com/aakashloyar/beats/track/internal/application/ports/in/track"
+	"github.com/aakashloyar/beats/track/internal/application/ports/out"
 	"github.com/aakashloyar/beats/track/internal/domain"
 	"strings"
 )
 
 type TrackRepository struct {
-	db *sql.DB 
+	db *sql.DB
 }
 
 func NewTrackRepository(db *sql.DB) out.TrackRepository {
@@ -34,7 +34,7 @@ func (r *TrackRepository) Save(track domain.Track) error {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)	
 	`
 	_, err := r.db.Exec(
-		query, 
+		query,
 		track.ID,
 		track.Title,
 		track.ArtistID,
@@ -45,10 +45,10 @@ func (r *TrackRepository) Save(track domain.Track) error {
 		track.ReleaseDate,
 		track.CreatedAt,
 	)
-	return err 
+	return err
 }
 
-func (r *TrackRepository) FindByID(id string) (domain.Track, error) {
+func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 	query := `
 		SELECT 
 			id,
@@ -63,7 +63,7 @@ func (r *TrackRepository) FindByID(id string) (domain.Track, error) {
 		FROM Tracks
 		WHERE id = $1	
 	`
-	row := r.db.QueryRow(query, id)
+	row := r.db.QueryRow(query, trackID)
 
 	var track domain.Track
 	err := row.Scan(
@@ -81,9 +81,8 @@ func (r *TrackRepository) FindByID(id string) (domain.Track, error) {
 	if err != nil {
 		return domain.Track{}, err
 	}
-	return track, nil 
+	return track, nil
 }
-
 
 func (r *TrackRepository) ListTracks(input in.ListTracksInput) ([]domain.Track, error) {
 	query := `
@@ -126,7 +125,6 @@ func (r *TrackRepository) ListTracks(input in.ListTracksInput) ([]domain.Track, 
 	}
 
 	rows, err := r.db.Query(query, args)
-
 
 	if err != nil {
 		return nil, err

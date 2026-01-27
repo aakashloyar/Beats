@@ -1,5 +1,5 @@
-package domain 
+package domain
 
 type IDGenerator interface {
-    NewID() string
+	NewID() string
 }

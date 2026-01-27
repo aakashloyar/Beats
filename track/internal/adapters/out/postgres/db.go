@@ -3,17 +3,16 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	
 	//_ "github.com/lib/pq"
 )
 
 type Config struct {
-	Host string
-	Port int 
-	User string
+	Host     string
+	Port     int
+	User     string
 	Password string
 	DBName   string
-	SSLMode  string 
+	SSLMode  string
 }
 
 func (cfg Config) NewDB() (*sql.DB, error) {
@@ -24,7 +23,7 @@ func (cfg Config) NewDB() (*sql.DB, error) {
 		cfg.User,
 		cfg.Password,
 		cfg.DBName,
-		cfg.SSLMode,		
+		cfg.SSLMode,
 	)
 	db, err := sql.Open("postgres", dsn)
 
@@ -35,5 +34,5 @@ func (cfg Config) NewDB() (*sql.DB, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
-	return db, nil 
+	return db, nil
 }

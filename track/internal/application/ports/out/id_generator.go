@@ -1,5 +1,5 @@
 package out
 
 type IDGenerator interface {
-    NewID() string
+	NewID() string
 }
