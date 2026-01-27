@@ -78,7 +78,7 @@ func (h *Handler) CreateTrack(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func (h *Handler) GetTrackById(w http.ResponseWriter, r *http.Request, id string) {
+func (h *Handler) GetTrackByID(w http.ResponseWriter, r *http.Request, id string) {
 	out, err := h.getTrackService.Execute(r.Context(),id)
 	if err != nil {
 		http.Error(w, err.Error(),http.StatusInternalServerError)

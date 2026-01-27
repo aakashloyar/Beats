@@ -27,7 +27,7 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 				http.Error(w,"missing track id",http.StatusBadRequest)
 				return 
 			} 
-			h.GetTrackById(w,r,id)
+			h.GetTrackByID(w,r,id)
 		}
 		default: {
 			http.Error(w,"method not allowed",http.StatusMethodNotAllowed)

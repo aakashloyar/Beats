@@ -6,5 +6,5 @@ import (
 )
 
 type GetTrackService interface {
-	Execute(ctx context.Context, trackId string) (domain.Track, error)
+	Execute(ctx context.Context, trackID string) (domain.Track, error)
 }

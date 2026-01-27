@@ -6,7 +6,7 @@ import (
 
 type TrackRepository interface {
 	Save(track domain.Track) error
-	FindById(id string) (domain.Track, error)
+	FindByID(id string) (domain.Track, error)
 	ListTracks(input in.ListTracksInput) ([]domain.Track, error)
 }
 

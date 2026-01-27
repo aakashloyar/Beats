@@ -48,7 +48,7 @@ func (r *TrackRepository) Save(track domain.Track) error {
 	return err 
 }
 
-func (r *TrackRepository) FindById(id string) (domain.Track, error) {
+func (r *TrackRepository) FindByID(id string) (domain.Track, error) {
 	query := `
 		SELECT 
 			id,
