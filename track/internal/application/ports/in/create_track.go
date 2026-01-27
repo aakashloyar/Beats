@@ -19,11 +19,9 @@ type CreateTrackOutput struct {
     TrackID string
 }
 
-
 type CreateTrackService interface {
-	Execute(ctx context.Context, input *CreateTrackInput) (*CreateTrackOutput, error)
+	Execute(ctx context.Context, input CreateTrackInput) (CreateTrackOutput, error)
 }
 
-type GetTrackService interface {
-	Execute(ctx context.Context, trackId string) (*domain.Track, error)
-}
+
+
