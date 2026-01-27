@@ -22,11 +22,11 @@ func NewCreateTrackService( trackRepo out.TrackRepository, clock domain.Clock, i
     }
 }
 
-func (s *CreateTrackService) Execute(ctx context.Context, input *in.CreateTrackInput) (*in.CreateTrackOutput,error){
+func (s *CreateTrackService) Execute(ctx context.Context, input in.CreateTrackInput) (in.CreateTrackOutput,error){
     if input.Title == "" {
-        return nil, errors.New("Title is required")
+        return in.CreateTrackOutput{}, errors.New("Title is required")
     }
-    track:=&domain.Track{
+    track:=domain.Track{
         ID: s.idGen.NewID(),
         Title: input.Title,
         ArtistID: input.ArtistID,
@@ -38,8 +38,8 @@ func (s *CreateTrackService) Execute(ctx context.Context, input *in.CreateTrackI
         CreatedAt: s.clock.Now(),
     }
     if err := s.trackRepo.Save(track) ; err != nil {
-        return nil, err
+        return in.CreateTrackOutput{}, err
     }
-    return &in.CreateTrackOutput{TrackID: track.ID}, nil
+    return in.CreateTrackOutput{TrackID: track.ID}, nil
 
 }
