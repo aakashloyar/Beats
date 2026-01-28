@@ -2,8 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-
-	"github.com/aakashloyar/beats/track/internal/application/ports/in/track"
 	"github.com/aakashloyar/beats/track/internal/application/ports/out"
 	"github.com/aakashloyar/beats/track/internal/domain"
 	"strings"
@@ -84,7 +82,7 @@ func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 	return track, nil
 }
 
-func (r *TrackRepository) ListTracks(input in.ListTracksInput) ([]domain.Track, error) {
+func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, error) {
 	query := `
 	SELECT id, title, artist_id, album_id
 	FROM tracks
@@ -95,17 +93,17 @@ func (r *TrackRepository) ListTracks(input in.ListTracksInput) ([]domain.Track, 
 		args       []any
 	)
 
-	if input.Title != "" {
+	if input.Title != nil {
 		conditions = append(conditions, "LOWER(title) LIKE LOWER(?)")
-		args = append(args, "%"+input.Title+"%")
+		args = append(args, "%"+*input.Title+"%")
 	}
 
-	if input.ArtistID != "" {
+	if input.ArtistID != nil {
 		conditions = append(conditions, "artist_id = ?")
 		args = append(args, input.ArtistID)
 	}
 
-	if input.AlbumID != "" {
+	if input.AlbumID != nil {
 		conditions = append(conditions, "album_id = ?")
 		args = append(args, input.AlbumID)
 	}
@@ -115,11 +113,11 @@ func (r *TrackRepository) ListTracks(input in.ListTracksInput) ([]domain.Track, 
 
 	query += " ORDER BY created_at DESC "
 
-	if input.Limit != "" {
+	if input.Limit != nil {
 		query += "LIMIT ?"
 		args = append(args, input.Limit)
 	}
-	if input.Offset != "" {
+	if input.Offset != nil {
 		query += "OFFSET ?"
 		args = append(args, query)
 	}
