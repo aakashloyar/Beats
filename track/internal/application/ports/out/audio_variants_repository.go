@@ -1,8 +1,8 @@
-package out 
+package out
 
 import "github.com/aakashloyar/beats/track/internal/domain"
 
 type AudioVariantRepository interface {
-	Save(variant *domain.AudioVariant) error
-	FindByTrackID(trackID string) ([] *domain.AudioVariant, error)
+	Save(variant domain.AudioVariant) error
+	FindByTrackID(trackID string) ([]domain.AudioVariant, error)
 }
