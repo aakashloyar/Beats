@@ -5,7 +5,7 @@ import (
 )
 
 func RegisterRoutes(mux *http.ServeMux, h *Handler) {
-	mux.HandleFunc("/tracks", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/artists", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			{
@@ -17,11 +17,11 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 			}
 		}
 	})
-	mux.HandleFunc("/tracks/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/artists/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			{
-				artistID := r.URL.Path[len("/tracks/"):]
+				artistID := r.URL.Path[len("/artists/"):]
 				if artistID == "" {
 					http.Error(w, "missing artist id", http.StatusBadRequest)
 					return
