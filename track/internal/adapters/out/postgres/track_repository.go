@@ -84,7 +84,16 @@ func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 
 func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, error) {
 	query := `
-	SELECT id, title, artist_id, album_id
+	    SELECT
+		    id,
+			title,
+			artist_id,
+			album_id,
+			coverimage_url,
+			duration_ms,
+			language,
+			release_date,
+			created_at
 	FROM tracks
 	`
 
