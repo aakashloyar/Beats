@@ -80,3 +80,5 @@ func (h *Handler) GetArtistByID(w http.ResponseWriter, r *http.Request, artistID
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
+
+
