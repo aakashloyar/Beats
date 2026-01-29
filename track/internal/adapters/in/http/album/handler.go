@@ -83,7 +83,6 @@ func (h *Handler) GetAlbumByID(w http.ResponseWriter, r *http.Request, albumID s
 	json.NewEncoder(w).Encode(resp)
 }
 
-
 func (h *Handler) ListAlbums(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
@@ -112,4 +111,3 @@ func (h *Handler) ListAlbums(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
-

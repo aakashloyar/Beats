@@ -12,9 +12,9 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 				h.CreateAlbum(w, r)
 			}
 		case http.MethodGet:
-		{
-			h.ListAlbums(w, r)
-		}	
+			{
+				h.ListAlbums(w, r)
+			}
 		default:
 			{
 				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
