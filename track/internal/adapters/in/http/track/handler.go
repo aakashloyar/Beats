@@ -34,17 +34,31 @@ type GetTrackResponse struct {
 	CreatedAt     time.Time       `json:"created_at"`
 }
 
-type Handler struct {
-	createTrackService in.CreateTrackService
-	getTrackService    in.GetTrackService
-	listTracksService  in.ListTracksService
+type ListAudioVariantsByTrackResponse struct {
+	ID           string    `json:"id"`
+	TrackID      string    `json:"track_id"`
+	Codec        string    `json:"codec"`
+	BitrateKbps  int       `json:"bitrate_kbps"`
+	SampleRateHz int       `json:"sample_rate_hz"`
+	Channels     int       `json:"channels"`
+	DurationMs   int64     `json:"duration_ms"`
+	FileURL      string    `json:"file_url"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
-func NewHandler(createTrackService in.CreateTrackService, getTrackService in.GetTrackService, listTracksService in.ListTracksService) *Handler {
+type Handler struct {
+	createTrackService      in.CreateTrackService
+	getTrackService         in.GetTrackService
+	listTracksService       in.ListTracksService
+	listAudioVariantService in.ListAudioVariantsByTrackService
+}
+
+func NewHandler(createTrackService in.CreateTrackService, getTrackService in.GetTrackService, listTracksService in.ListTracksService, listAudioVariantService in.ListAudioVariantsByTrackService) *Handler {
 	return &Handler{
-		createTrackService: createTrackService,
-		getTrackService:    getTrackService,
-		listTracksService:  listTracksService,
+		createTrackService:      createTrackService,
+		getTrackService:         getTrackService,
+		listTracksService:       listTracksService,
+		listAudioVariantService: listAudioVariantService,
 	}
 }
 
@@ -134,4 +148,30 @@ func (h *Handler) ListTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+}
+
+func (h *Handler) ListAudioVariantsByTrack(w http.ResponseWriter, r *http.Request, trackID string) {
+	variants, err := h.listAudioVariantService.Execute(r.Context(), in.ListAudioVariantsByTrackInput{TrackID: trackID})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := []ListAudioVariantsByTrackResponse{}
+	for _, each := range resp {
+		curr := ListAudioVariantsByTrackResponse{
+			ID:           each.ID,
+			TrackID:      each.TrackID,
+			Codec:        each.Codec,
+			BitrateKbps:  each.BitrateKbps,
+			SampleRateHz: each.SampleRateHz,
+			Channels:     each.Channels,
+			DurationMs:   each.DurationMs,
+			FileURL:      each.FileURL,
+			CreatedAt:    each.CreatedAt,
+		}
+		resp = append(resp, curr)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(variants)
 }
