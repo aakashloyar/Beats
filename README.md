@@ -1,388 +1,50 @@
-# Beats
+# 🎵 BEATS Backend
 
-# Functional requirements
+A scalable **music streaming backend system** inspired by platforms like Spotify, JioSaavn, and Apple Music.
 
+This project is designed using **Microservices + Hexagonal Architecture (Ports & Adapters)** with **Go (Golang)**.
 
-Now let us look at some services
+---
 
-# *** Services ***
+# 📌 Stage 1 Scope
 
-1. Track Service
-2. Playback Service
-3. User 
-4. Auth
-5. Playlist
-6. Recommendation
-7. Discovery
-8. Ingestion (upload)
-9. Encoding
+We are currently focusing on the core backend services required to upload, process, store, and stream songs.
 
-*** Services ***
+### Services in Stage 1
 
+1. **Track Service**
+2. **Ingestion Service**
+3. **Encoding Service**
+4. **Playback Service**
 
+---
 
-# *** Track Service ***
+# 🏗️ Overall Architecture
 
-let us look at the database design of this service 
+```text
+Artist Upload
+     |
+     v
+Ingestion Service
+     |
+     v
+Encoding Service
+     |
+     v
+Track Service
+     |
+     v
+Playback Service
+     |
+     v
+Client (Web / Mobile)
+```
 
+---
 
-*** Tables ***
+# 📁 Monorepo Structure
 
-
-
-*** Table1 -> tracks ***
-1. id
-2. title
-3. artist_id
-4. album_id
-5. cover_image_url
-6. duration_ms
-7. languages
-8. release_date
-9. created_at
-
-Important Points
-
-1. id
--> So this will be uuid
--> Why not autoincrement-> not good for distributed systems / also autoincrement is painful for migration
--> UUID -> Universal Unique Identifier
--> Universal-> works everywhere
--> Unique-> always unique
--> Identifire-> Used to identify any row or object
-
--> Why it is always unique/ Chance of Collision is zero
--> Because-> it depends on -> Time/ randomness/ Machineinfo
-
--> V4 vs V7 
--> V4 -> only random numbers
--> V7 -> Timestamp vs randomness
--> in V7 indexing also good 
--> as it uses timestamp so arranged according to that only
-
-
-
-2. title
-
-
-
-3. artist_id
--> It must be uuid only
-
-4. album_id
--> uuid only
--> from here you will get your image url
-
-
-5. cover_image_url
--> some song does not belong to album
--> so album_id is also nullable
--> in those cases you will get image from here
-
-6. duration_ms
--> Must be in microsecond for a nice chunk size or not dealing with float
-
-
-7. languages
--> now here come 1 main things
--> a song can be in english and hindi both 
--> so we are not looking at this case currently bcz this is only 1% chance
--> if there is mix also then most of the cases have one language dominating
--> so now we are considering to only 1 language
--> now language must be enum 
--> here we are giving 4 options
--> hindi-> hi 
--> english-> en
--> haryanvi-> hr
--> punjabi-> pn
-
-
-8. release_date
--> stored as date only not as time
--> bcz you donot require any time 
--> just date is fine here
-
-
-9. created_at
--> date with time 
--> TIMESTAMPTZ = timestamp with timezone
--> stored as UTC 
--> UTC = Coordinated Universal Time
--> IST (UTC+5:30)
-
-
-
-*** Table1 end ***
-
-
-*** Table2 -> artists  ***
-1. id
-2. name
-3. bio
-4. profile_image_url
-5. created_at
-
-1. id 
--> uuid
-
-2. name
-
-3. bio
--> about them
-
-4. profile_image_url
--> stored in CDN
--> CDN -> content delivery network
--> why cdn 
--> databases are not designed for images
-
-5. created_at
--> TIMESTAMPZ
-
-
-*** Table2 end ***
-
-
-*** Table3 -> albums ***
-1. id
-2. title
-3. cover_image_url
-4. release_date
-5. created_at
-
-1. id 
--> uuid
-
-2. title
-
-3. cover_image_url
--> stored in CDN
-
-4. release_date 
--> date
-
-5. created_at
--> TIMESTAMPZ
-
-***  Table3 end  ***
-*** Tables ***
-
-*** Table4 -> audio_variants ***
-1. id
-2. track_id
-3. codec
-4. bitrate_kbps
-5. sample_rate_hz
-6. channels
-7. duration_ms
-8. file_url
-9. created_at
-
-1. id
--> uuid
-
-2. track_id
--> uuid
-
-3. codec 
-*  currently moving with ogg
--> co+dec -> compressor + decompressor
--> raw audio is huge
--> 5 min song (raw WAV) 50-60MB
--> it is like a way to compress and decompress song
--> compresses during audio storage and decompresses during playback
--> currently we are considering only ogg
--> but we are planning to considering 3 codecs ogg, aac, mp3
--> mp3 is the oldest
--> most devices support mp3
--> aac is successor of mp3
--> it is mostly used for ios
--> ogg  with opus (ogg is contaniner opus is codec inside it)
-
-4. bitrates
-*  currently using only 3 (96| 160| 320)kb
--> how many bits do we need to play this song per sec
--> KB -> kilo byte
--> earlier 1KB -> 1024 Kilo Bytes
--> now 1KB = 1000 Kilo Bytes
--> 1kbps = 1000 bits/sec not bytes per seconds
-
-5. sample_rate_hz
-*  44,100Hz
--> refresh rate 
--> sample_rate must be 2*x of frequency you listen 
--> so 20Hz-20KHz  20KHz*2
-
-6. channels
-*  currently 2
--> in song there are 2 channels 
--> in other there can be 1 or 2 
--> we have left and right ear
--> so left-> guitar slightly louder
--> right -> singer slightly louder
--> this will give 3d feel more natural
--> mono(1) or stereo(2)
-
-7. duration
--> track.duration -> logical duration of that song -> shown everywhere in the app (UI and metadata)
--> audio_varaiants.duration-> actual playable duration of that file -> used in playback and streaming
--> Track: Shape of You 
--> Duration: 233 seconds
--> MP3 version → 233.01 sec
--> OGG version → 232.98 sec
--> AAC version → 233.05 sec
--> this is due to codec behaviour
-
-
-8. file_url
-*  moving with segment bases streaming
--> this is the main part of our application 
--> in real system there is only two type of streaming
--> byte range streaming / segment based streaming
-
-***  Byte range streaming ***
--> byte range streaming -> in this file is actual audio file
--> how this happens -> give me chunk from 0-200kb-> then 200-400kb
--> byte range = chunks
--> chunk stored in memory 
--> https supports range requests
--> no need to precut files
-
-***  Segment Based streaming ***
--> in this audio is pre-cut into smaller pieces
--> each segment -> 2-6sec, independent file, stored in cdn
--> file_url does not point to audio
--> it points to manifest file
-
--> what is a manifest file
--> it is a text file 
--> contains -> song duration, codec, bitrate, where segments are
-
-*** True real-time streaming (WebRTC / RTMP) ***
--> Not for us for zoom or googlemeet
--> does jiohotstar use webrtc for ipl streaming
--> no, because more expensive it is per connection but ipl streaming means serving more user not faster
-
-9. created_at
--> TIMESTAMPZ
-
-Important points
-
-
-*** Track Service ***
-
-
-# *** Ingestion Service ***
-
--> This is service which take care of uploading the song
--> master.wav / master.flac | This is the main file that is uploaded by artist
--> master.wav is the original recorded file
--> master.flac is the compressed file with same quality || compressed by finding the same pattern
--> these both are same just flac is space saver
-
-
-
-
--> now let us look at all the steps including in ingestion service
-1. artist upload master file
-2. client splits into chunks
-3. Ingestion service receives chunks
-4. chunks are temporarily stored
-5. upload completion is verified
-6. chunks are merged into master file
-7. master file is validated 
-8. master file is stored permanently 
-9. encoding is trigerred
-10. track is mark as ingested
-
--> now we will start exploring the steps 
-1. Artists start upload
--> usually master.wav or master.flac
--> high quality
--> in future only from this file all variants are made
-
-2. client splits into chunks
--> this is done by frontend
--> why in chunks 
--> suppose 10mb song
--> some error then resend whole song
--> but suppose 10 chunks -> then network error -> only that chunk you need to resend
--> each chunks has upload_id,  chunk_number, raw_bytes
-
-3. Ingestion service receiving chunks
--> POST /ingestion/upload-chunk
-
-
-4. Temporary chunks storage
--> chunks are stored in temporary storage
--> marked as incomplete
--> stored in local storage, object storage like s3
--> why temporary -> upload may be fail or may be cancelled
-
-5. Upload completion verification
--> ingestion service checks -> are all chunks present, are continuous, size matches the actual size
--> this will reject or proceed
-
-6. chunk merge
--> read chunks in order
--> append bytes
--> create one file -> master.flac
-
-7. master file validation 
-=> validiates 
--> file types
--> duration readable
--> no corruption 
--> audio headers valid
--> reject or continue
-
-8. permanent storage of master
--> master file is stored in long term storage
--> object storage bucked, not cdn, not public 
--> source of truth 
-
-9. Encoding
-
-10. mark ingestion complete
--> track.status= ingested
-
-
--> ingestion service is done till step 8
--> at step 9 encoding service come into picture
--> ingestion service triggers encoding via messaging queue
-
-*** Ingestion Service ***
-
-
-
-cheers
--> ui
--> backend
-  -> ingestion
-  -> encoding
-  -> trackservice
-  -> playback 
-
-
-
-
-
-
-
-
-
-# Project planning 
-
-1. Track Service
-2. Ingestion Service 
-3. Encoding Service
-4. Playback Service 
-
--> Here it is sufficient 
--> this is stage1 of our project
--> then we will do other stages
-
-
+```text
 BEATS-backend/
 ├── track-service/
 ├── playback-service/
@@ -393,43 +55,632 @@ BEATS-backend/
 ├── discovery-service/
 ├── ingestion-service/
 ├── encoding-service/
-├── analtyics-service
-├── notification-service
-├── gateway-service
-├── proto/                 # gRPC contracts (shared)
-├── libs/                  # shared infra libs (auth, logging)
-├── deploy/                # k8s, terraform, helm
+├── analytics-service/
+├── notification-service/
+├── gateway-service/
+├── proto/                 # Shared gRPC contracts
+├── libs/                  # Shared libraries (auth, logging, utils)
+├── deploy/                # Kubernetes, Terraform, Helm configs
 └── README.md
+```
 
--> we will follow the hexagonal architecture 
+---
 
+# 🧱 Architectural Style
 
+We follow **Hexagonal Architecture (Ports & Adapters)**.
+
+### Why Hexagonal?
+
+- Business logic stays independent.
+- Easy to swap database.
+- Easy to change transport (HTTP → gRPC).
+- Better testability.
+- Clear separation of concerns.
+
+---
+
+## Hexagonal Structure Example
+
+```text
 track-service/
 ├── cmd/
 │   └── server/
 │       └── main.go
+│
 ├── internal/
 │   ├── domain/
-│   │   ├── 
-│   │   └── 
+│   │   ├── track.go
+│   │   ├── artist.go
+│   │   └── album.go
+│   │
 │   ├── application/
 │   │   ├── ports/
 │   │   │   ├── in/
 │   │   │   └── out/
 │   │   └── service/
+│   │
 │   ├── adapters/
-│   │   ├── in/ -> incoming requests
+│   │   ├── in/
 │   │   │   ├── http/
-│   │   │   └── grpc/
+│   │   │   ├── grpc/
 │   │   │   └── kafka-consumer/
-│   │   └── out/ -> outgoing dependencies
+│   │   │
+│   │   └── out/
 │   │       ├── postgres/
 │   │       ├── redis/
-│   │       └── kafka-producer/
-│   │       └── S3-CDN/
+│   │       ├── kafka-producer/
+│   │       └── s3-cdn/
+│   │
 │   ├── config/
 │   └── observability/
+│
 ├── migrations/
 ├── go.mod
 └── go.sum
+```
 
+---
+
+# 🎼 Service 1: Track Service
+
+Track service manages all song metadata.
+
+---
+
+## Database Design
+
+---
+
+## Table: `tracks`
+
+```sql
+tracks
+```
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID | Primary key |
+| `title` | TEXT | Song title |
+| `artist_id` | UUID | FK → artists |
+| `album_id` | UUID (nullable) | FK → albums |
+| `cover_image_url` | TEXT | Used if album is null |
+| `duration_ms` | BIGINT | Duration in milliseconds |
+| `language` | ENUM | `hi`, `en`, `hr`, `pn` |
+| `release_date` | DATE | Date only |
+| `created_at` | TIMESTAMPTZ | UTC timestamp |
+
+---
+
+### Why UUID?
+
+Why not auto-increment?
+
+Problems with auto-increment:
+
+- Hard in distributed systems
+- Sharding issues
+- Migration pain
+- Predictable IDs
+
+UUID solves this.
+
+### UUID v4 vs UUID v7
+
+#### UUID v4
+
+- Random only
+- Collision probability near zero
+
+#### UUID v7
+
+- Timestamp + randomness
+- Better indexing
+- Insert locality
+- Recommended
+
+---
+
+## Table: `artists`
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `name` | TEXT |
+| `bio` | TEXT |
+| `profile_image_url` | TEXT |
+| `created_at` | TIMESTAMPTZ |
+
+### Notes
+
+Profile images are stored in **CDN**.
+
+Why not database?
+
+- Databases are bad for large binary files
+- CDN provides caching and fast delivery
+
+---
+
+## Table: `albums`
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `title` | TEXT |
+| `cover_image_url` | TEXT |
+| `release_date` | DATE |
+| `created_at` | TIMESTAMPTZ |
+
+---
+
+## Table: `audio_variants`
+
+Stores playable versions of a track.
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `track_id` | UUID |
+| `codec` | ENUM |
+| `bitrate_kbps` | INT |
+| `sample_rate_hz` | INT |
+| `channels` | INT |
+| `duration_ms` | BIGINT |
+| `file_url` | TEXT |
+| `created_at` | TIMESTAMPTZ |
+
+---
+
+### Codec
+
+Codec = **Compressor + Decompressor**
+
+Raw audio is huge.
+
+Example:
+
+```text
+5 min WAV file ≈ 50-60 MB
+```
+
+Supported codecs:
+
+- **MP3**
+- **AAC**
+- **OGG (Opus)** ← preferred
+
+---
+
+### Bitrate
+
+Current options:
+
+```text
+96 kbps
+160 kbps
+320 kbps
+```
+
+Meaning:
+
+```text
+Bits consumed per second during playback
+```
+
+---
+
+### Sample Rate
+
+Current:
+
+```text
+44,100 Hz
+```
+
+Reason:
+
+Human hearing:
+
+```text
+20 Hz → 20,000 Hz
+```
+
+Nyquist theorem:
+
+```text
+Sample rate ≥ 2 × max frequency
+```
+
+---
+
+### Channels
+
+Possible values:
+
+- `1` → Mono
+- `2` → Stereo
+
+Stereo gives better spatial experience.
+
+Example:
+
+- Left ear → guitar louder
+- Right ear → vocals louder
+
+---
+
+### Why `track.duration_ms` and `audio_variant.duration_ms` both?
+
+Because codecs slightly alter actual duration.
+
+Example:
+
+```text
+Track metadata: 233 sec
+MP3: 233.01 sec
+OGG: 232.98 sec
+AAC: 233.05 sec
+```
+
+Track duration = logical duration shown in UI.
+
+Variant duration = exact playback duration.
+
+---
+
+## Streaming Model
+
+Two main approaches:
+
+---
+
+### 1. Byte-Range Streaming
+
+```text
+GET bytes 0-200KB
+GET bytes 200-400KB
+```
+
+Advantages:
+
+- Simpler
+- No preprocessing
+- HTTP Range Requests
+
+---
+
+### 2. Segment-Based Streaming (Preferred)
+
+Audio is pre-cut into segments.
+
+```text
+segment_1.ts
+segment_2.ts
+segment_3.ts
+```
+
+Each segment:
+
+```text
+2–6 seconds
+```
+
+`file_url` points to **manifest file**, not actual audio.
+
+Example:
+
+```text
+playlist.m3u8
+```
+
+Manifest contains:
+
+- Duration
+- Codec
+- Bitrate
+- Segment URLs
+
+Benefits:
+
+- Adaptive bitrate streaming
+- Better buffering
+- Better CDN caching
+
+---
+
+### 3. True Real-Time Streaming
+
+Protocols:
+
+- WebRTC
+- RTMP
+
+Used for:
+
+- Zoom
+- Google Meet
+
+Not suitable for music streaming.
+
+---
+
+# 📥 Service 2: Ingestion Service
+
+Responsible for accepting uploaded master audio.
+
+---
+
+## Upload Flow
+
+```text
+1. Artist uploads master file
+2. Client splits into chunks
+3. Ingestion service receives chunks
+4. Temporary storage
+5. Completion verification
+6. Chunk merge
+7. Validation
+8. Permanent storage
+9. Trigger encoding
+10. Mark ingested
+```
+
+---
+
+## Step-by-Step
+
+---
+
+### 1. Artist Uploads Master File
+
+Formats:
+
+```text
+master.wav
+master.flac
+```
+
+These are source-of-truth files.
+
+---
+
+### 2. Client Splits into Chunks
+
+Done on frontend.
+
+Why?
+
+Without chunking:
+
+```text
+10MB upload fails → restart whole upload
+```
+
+With chunking:
+
+```text
+chunk_7 failed → resend only chunk_7
+```
+
+Chunk payload:
+
+```json
+{
+  "upload_id": "...",
+  "chunk_number": 7,
+  "raw_bytes": "..."
+}
+```
+
+---
+
+### 3. Upload Chunk Endpoint
+
+```http
+POST /ingestion/upload-chunk
+```
+
+---
+
+### 4. Temporary Chunk Storage
+
+Possible storage:
+
+- Local disk
+- S3 temporary bucket
+
+Status:
+
+```text
+incomplete
+```
+
+---
+
+### 5. Completion Verification
+
+Checks:
+
+- All chunks exist
+- Chunks continuous
+- Total size matches
+
+---
+
+### 6. Chunk Merge
+
+```text
+chunk_1 + chunk_2 + ... + chunk_n
+```
+
+Result:
+
+```text
+master.flac
+```
+
+---
+
+### 7. Master File Validation
+
+Checks:
+
+- File type
+- Audio headers
+- Readable duration
+- Corruption
+
+---
+
+### 8. Permanent Storage
+
+Store master file in:
+
+```text
+Private Object Storage
+```
+
+Examples:
+
+- Amazon S3
+- GCS
+- MinIO
+
+Not public CDN.
+
+---
+
+### 9. Trigger Encoding Service
+
+Use message queue.
+
+Examples:
+
+- Kafka
+- RabbitMQ
+- NATS
+
+---
+
+### 10. Mark Ingestion Complete
+
+```text
+track.status = ingested
+```
+
+---
+
+# 🎛️ Service 3: Encoding Service
+
+Converts master file into multiple streaming variants.
+
+---
+
+## Responsibilities
+
+Generate:
+
+- OGG 96 kbps
+- OGG 160 kbps
+- OGG 320 kbps
+
+Future:
+
+- AAC
+- MP3
+
+---
+
+## Segmenting
+
+Creates:
+
+```text
+playlist.m3u8
+segment_001.ts
+segment_002.ts
+```
+
+Uploads to CDN.
+
+---
+
+# ▶️ Service 4: Playback Service
+
+Responsible for serving songs to listeners.
+
+---
+
+## Responsibilities
+
+- Fetch available variants
+- Select bitrate
+- Return manifest URL
+- Track playback session
+- Authorization checks
+- Handle buffering retries
+
+---
+
+# 🔧 Tech Stack
+
+### Language
+
+- Go (Golang)
+
+### Communication
+
+- HTTP
+- gRPC
+- Kafka events
+
+### Storage
+
+- PostgreSQL
+- Redis
+- S3 / Object Storage
+- CDN
+
+### Deployment
+
+- Docker
+- Kubernetes
+- Terraform
+- Helm
+
+### Observability
+
+- Prometheus
+- Grafana
+- OpenTelemetry
+
+---
+
+# 🚀 Future Services
+
+Planned for later stages:
+
+- User Service
+- Auth Service
+- Playlist Service
+- Recommendation Service
+- Discovery Service
+- Analytics Service
+- Notification Service
+- Gateway Service
+
+---
+
+# Goal
+
+Build a production-grade music streaming backend that is:
+
+- Scalable
+- Fault tolerant
+- Distributed
+- Observable
+- Cloud native
+- Easy to extend
+
+---
