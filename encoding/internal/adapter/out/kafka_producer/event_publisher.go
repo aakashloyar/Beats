@@ -1,0 +1,41 @@
+package kafkaproducer
+
+import (
+	"context"
+	"encoding/json"
+	"time"
+	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/aakashloyar/beats/encoding/internal/application/ports/out"
+)
+
+
+func (p *FranzProducer) PublishUploadCompleted(ctx context.Context,event out.EncodeCompletedEvent) error {
+
+	bytes, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+
+	record := &kgo.Record{
+		Topic: p.topic,
+		Value: bytes,
+		Timestamp:  time.Now(),
+	}
+
+	done := make(chan error, 1)
+
+	p.client.Produce(ctx, record, func(_ *kgo.Record, err error) {
+		done <- err
+	})
+
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (p *FranzProducer) Close() {
+	p.client.Close()
+}
