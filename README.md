@@ -258,7 +258,10 @@ Important Points
 -> it is a text file 
 -> contains -> song duration, codec, bitrate, where segments are
 
-
+*** True real-time streaming (WebRTC / RTMP) ***
+-> Not for us for zoom or googlemeet
+-> does jiohotstar use webrtc for ipl streaming
+-> no, because more expensive it is per connection but ipl streaming means serving more user not faster
 
 9. created_at
 -> TIMESTAMPZ
@@ -390,6 +393,9 @@ BEATS-backend/
 ├── discovery-service/
 ├── ingestion-service/
 ├── encoding-service/
+├── analtyics-service
+├── notification-service
+├── gateway-service
 ├── proto/                 # gRPC contracts (shared)
 ├── libs/                  # shared infra libs (auth, logging)
 ├── deploy/                # k8s, terraform, helm
