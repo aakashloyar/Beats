@@ -13,13 +13,17 @@ const (
 
 type Upload struct {
 	ID              string
+	Title           string 
 	ArtistID        string
+	AlbumID         *string 
+	CoverImageURL   *string 
 	FileName        string
 	FileSize        int64
 	Status          UploadStatus
 	StorageUploadID string
     StorageKey      string 
 	TotalChunks     int
+	ReleasedAt      *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

@@ -9,10 +9,7 @@ import (
 )
 
 
-func (p *FranzProducer) PublishUploadCompleted(
-	ctx context.Context,
-	event out.UploadCompletedEvent,
-) error {
+func (p *FranzProducer) PublishUploadCompleted(ctx context.Context, event out.UploadCompletedEvent) error {
 
 	bytes, err := json.Marshal(event)
 	if err != nil {

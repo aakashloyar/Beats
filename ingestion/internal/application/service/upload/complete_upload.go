@@ -79,9 +79,13 @@ func (s *CompleteUploadService) Execute(ctx context.Context, input in.CompleteUp
 
 	//6. Publish to encoding service 
 	err = s.publisher.PublishUploadCompleted(ctx,out.UploadCompletedEvent{
-		UploadID:   upload.ID,
-		StorageKey: upload.StorageKey,
-		ArtistID:   upload.ArtistID,
+		UploadID:      upload.ID,
+		Title:         upload.Title,
+		ArtistID:      upload.ArtistID,
+		AlbumID:       upload.AlbumID,
+		CoverImageURL: upload.CoverImageURL,
+		ReleasedAt:    upload.ReleasedAt,
+		StorageKey:    upload.StorageKey,
 	}); if err != nil {
 		return in.CompleteUploadOutput{},nil 
 	}

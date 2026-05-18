@@ -2,12 +2,17 @@ package in
 
 import (
 	"context"
+	"time"
 )
 
 type InitUploadInput struct {
-	ArtistID  string
-	FileName  string
-	FileSize  int64
+	Title         string 
+	ArtistID      string
+	AlbumID       *string 
+	CoverImageURL *string 
+	ReleasedAt    *time.Time
+	FileName      string
+	FileSize      int64
 }
 
 type UploadURL struct {

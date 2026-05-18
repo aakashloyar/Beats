@@ -3,6 +3,7 @@ module github.com/aakashloyar/beats/ingestion
 go 1.25.0
 
 require (
+	github.com/aakashloyar/beats v0.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.14
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.98.0
 	github.com/google/uuid v1.6.0
@@ -31,3 +32,5 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.25 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.12.0 // indirect
 )
+
+replace github.com/aakashloyar/beats => ../

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/aakashloyar/beats/ingestion/internal/application/ports/in/upload"
 	"net/http"
+	"time"
+	"github.com/aakashloyar/beats/config"
 )
 
 type Handler struct {
@@ -12,9 +14,14 @@ type Handler struct {
 }
 
 type initUploadRequest struct {
-	ArtistID  string    `json:"artist_id"`
-	FileName  string    `json:"file_name"`
-	FileSize  int64     `json:"file_size"`
+	Title         string          `json:"title"`
+	ArtistID      string          `json:"artist_id"`
+	AlbumID       *string         `json:"album_id,omitempty"`
+	CoverImageURL *string         `json:"cover_image_url,omitempty"`
+	Language      config.Language `json:"language"`
+	ReleasedAt    *time.Time      `json:"released_at,omitempty"`
+	FileName      string          `json:"file_name"`
+	FileSize      int64           `json:"file_size"`
 }
 
 type initUploadResponse struct {
@@ -46,9 +53,13 @@ func (h *Handler) InitUpload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 	}
 	input := in.InitUploadInput{
-		ArtistID:  req.ArtistID,
-		FileName:  req.FileName,
-		FileSize:  req.FileSize,
+		Title:         req.Title,
+		ArtistID:      req.ArtistID,
+		AlbumID:       req.AlbumID,
+		CoverImageURL: req.CoverImageURL,
+		ReleasedAt:    req.ReleasedAt,
+		FileName:      req.FileName,
+		FileSize:      req.FileSize,
 	}
 
 	out, err := h.initUploadService.Execute(r.Context(), input)

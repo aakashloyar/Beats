@@ -18,7 +18,10 @@ func (r *UploadRepository) Init(upload domain.Upload) error {
 	query := `
 		INSERT INTO uploads {
 			id,
+			title,
 			artist_id,
+			album_id,
+			cover_image_url,
 			file_name,
 			file_size,
 			status,
@@ -33,7 +36,10 @@ func (r *UploadRepository) Init(upload domain.Upload) error {
 	_, err := r.db.Exec(
 		query,
 		upload.ID,
+		upload.Title,
 		upload.ArtistID,
+		upload.AlbumID,
+		upload.CoverImageURL,
 		upload.FileName,
 		upload.FileSize,
 		upload.StorageUploadID,
