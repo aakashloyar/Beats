@@ -1,261 +1,693 @@
-# *** Track Service ***
+# 🎵 Track Service
 
-let us look at the database design of this service 
+The **Track Service** is responsible for managing all metadata related to songs and their playable audio variants.
 
+It acts as the **source of truth for music metadata** and provides information required by:
 
-*** Tables ***
+- Playback Service
+- Discovery Service
+- Recommendation Service
+- Playlist Service
 
+---
 
+# Responsibilities
 
-*** Table1 -> tracks ***
-1. id
-2. title
-3. artist_id
-4. album_id
-5. cover_image_url
-6. duration_ms
-7. languages
-8. release_date
-9. created_at
+Track Service manages:
 
-Important Points
+- Track metadata
+- Artist metadata
+- Album metadata
+- Audio variant metadata
+- Streaming file references
 
-1. id
--> So this will be uuid
--> Why not autoincrement-> not good for distributed systems / also autoincrement is painful for migration
--> UUID -> Universal Unique Identifier
--> Universal-> works everywhere
--> Unique-> always unique
--> Identifire-> Used to identify any row or object
+---
 
--> Why it is always unique/ Chance of Collision is zero
--> Because-> it depends on -> Time/ randomness/ Machineinfo
+# Database Design
 
--> V4 vs V7 
--> V4 -> only random numbers
--> V7 -> Timestamp vs randomness
--> in V7 indexing also good 
--> as it uses timestamp so arranged according to that only
+---
 
+# Table 1: `tracks`
 
+Stores the primary metadata of each song.
 
-2. title
+## Schema
 
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary identifier |
+| `title` | TEXT | Song title |
+| `artist_id` | UUID | FK → artists |
+| `album_id` | UUID (nullable) | FK → albums |
+| `cover_image_url` | TEXT (nullable) | Used when no album exists |
+| `duration_ms` | BIGINT | Logical song duration |
+| `language` | ENUM | Primary language |
+| `release_date` | DATE | Song release date |
+| `created_at` | TIMESTAMPTZ | Record creation timestamp |
 
+---
 
-3. artist_id
--> It must be uuid only
+## Field Explanations
 
-4. album_id
--> uuid only
--> from here you will get your image url
+---
 
+### 1. `id`
 
-5. cover_image_url
--> some song does not belong to album
--> so album_id is also nullable
--> in those cases you will get image from here
+Primary key of the track.
 
-6. duration_ms
--> Must be in microsecond for a nice chunk size or not dealing with float
+We use **UUID** instead of auto-increment integers.
 
+### Why not auto-increment?
 
-7. languages
--> now here come 1 main things
--> a song can be in english and hindi both 
--> so we are not looking at this case currently bcz this is only 1% chance
--> if there is mix also then most of the cases have one language dominating
--> so now we are considering to only 1 language
--> now language must be enum 
--> here we are giving 4 options
--> hindi-> hi 
--> english-> en
--> haryanvi-> hr
--> punjabi-> pn
+Problems in distributed systems:
 
+- Hard to shard
+- Database coordination needed
+- Migration complexity
+- Predictable IDs
 
-8. release_date
--> stored as date only not as time
--> bcz you donot require any time 
--> just date is fine here
+---
 
+### Why UUID?
 
-9. created_at
--> date with time 
--> TIMESTAMPTZ = timestamp with timezone
--> stored as UTC 
--> UTC = Coordinated Universal Time
--> IST (UTC+5:30)
+UUID = **Universal Unique Identifier**
 
+Properties:
 
+- **Universal** → works across all systems
+- **Unique** → extremely low collision probability
+- **Identifier** → uniquely identifies a row/object
 
-*** Table1 end ***
+Uniqueness comes from combinations of:
 
+- Timestamp
+- Randomness
+- Machine information
 
-*** Table2 -> artists  ***
-1. id
-2. name
-3. bio
-4. profile_image_url
-5. created_at
+---
 
-1. id 
--> uuid
-
-2. name
-
-3. bio
--> about them
-
-4. profile_image_url
--> stored in CDN
--> CDN -> content delivery network
--> why cdn 
--> databases are not designed for images
-
-5. created_at
--> TIMESTAMPZ
-
-
-*** Table2 end ***
-
-
-*** Table3 -> albums ***
-1. id
-2. title
-3. cover_image_url
-4. release_date
-5. created_at
-
-1. id 
--> uuid
-
-2. title
-
-3. cover_image_url
--> stored in CDN
-
-4. release_date 
--> date
-
-5. created_at
--> TIMESTAMPZ
-
-***  Table3 end  ***
-*** Tables ***
-
-*** Table4 -> audio_variants ***
-1. id
-2. track_id
-3. codec
-4. bitrate_kbps
-5. sample_rate_hz
-6. channels
-7. duration_ms
-8. file_url
-9. created_at
-
-1. id
--> uuid
-
-2. track_id
--> uuid
-
-3. codec 
-*  currently moving with ogg
--> co+dec -> compressor + decompressor
--> raw audio is huge
--> 5 min song (raw WAV) 50-60MB
--> it is like a way to compress and decompress song
--> compresses during audio storage and decompresses during playback
--> currently we are considering only ogg
--> but we are planning to considering 3 codecs ogg, aac, mp3
--> mp3 is the oldest
--> most devices support mp3
--> aac is successor of mp3
--> it is mostly used for ios
--> ogg  with opus (ogg is contaniner opus is codec inside it)
-
-4. bitrates
-*  currently using only 3 (96| 160| 320)kb
--> how many bits do we need to play this song per sec
--> KB -> kilo byte
--> earlier 1KB -> 1024 Kilo Bytes
--> now 1KB = 1000 Kilo Bytes
--> 1kbps = 1000 bits/sec not bytes per seconds
-
-5. sample_rate_hz
-*  44,100Hz
--> refresh rate 
--> sample_rate must be 2*x of frequency you listen 
--> so 20Hz-20KHz  20KHz*2
-
-6. channels
-*  currently 2
--> in song there are 2 channels 
--> in other there can be 1 or 2 
--> we have left and right ear
--> so left-> guitar slightly louder
--> right -> singer slightly louder
--> this will give 3d feel more natural
--> mono(1) or stereo(2)
-
-7. duration
--> track.duration -> logical duration of that song -> shown everywhere in the app (UI and metadata)
--> audio_varaiants.duration-> actual playable duration of that file -> used in playback and streaming
--> Track: Shape of You 
--> Duration: 233 seconds
--> MP3 version → 233.01 sec
--> OGG version → 232.98 sec
--> AAC version → 233.05 sec
--> this is due to codec behaviour
-
-
-8. file_url
-*  moving with segment bases streaming
--> this is the main part of our application 
--> in real system there is only two type of streaming
--> byte range streaming / segment based streaming
-
-***  Byte range streaming ***
--> byte range streaming -> in this file is actual audio file
--> how this happens -> give me chunk from 0-200kb-> then 200-400kb
--> byte range = chunks
--> chunk stored in memory 
--> https supports range requests
--> no need to precut files
--> ok so here is byte range streaming
--> basically let us see how it is working 
--> take a example -> abcdefgh... is the data
--> it will flow continuously depending on network 
--> it does not work like this ki client ask for this specific kb packet based on internet
--> it is a continuous flow like water and client consumes it 
--> so basically here suppose you want to resume playing at some timestamp 
--> you cannnot use it this is good for something like radio 
-
-***  Segment Based streaming ***
--> in this audio is pre-cut into smaller pieces
--> each segment -> 2-6sec, independent file, stored in cdn
--> file_url does not point to audio
--> it points to manifest file
-
-
-# Note :- We will move with segment based streaming 
--> what is a manifest file
--> it is a text file 
--> contains -> song duration, codec, bitrate, where segments are
-
-
-9. created_at
--> TIMESTAMPZ
-
-Working mechanism 
-
--> main -> routes -> handler -> service -> repo -> database -> opposite cycle 
-
-
-
-*** Track Service ***
+### UUID v4 vs UUID v7
 
+#### UUID v4
 
+```text
+Pure random
+```
 
+Pros:
+
+- Simple
+- Highly unique
+
+Cons:
+
+- Poor index locality
+- Random insert positions in B-tree
+
+---
+
+#### UUID v7 (Preferred)
+
+```text
+Timestamp + randomness
+```
+
+Pros:
+
+- Time ordered
+- Better indexing
+- Faster inserts
+- Better storage locality
+
+Recommended for this project.
+
+---
+
+### 2. `title`
+
+Human-readable track name.
+
+Example:
+
+```text
+Shape of You
+```
+
+---
+
+### 3. `artist_id`
+
+Foreign key to:
+
+```sql
+artists.id
+```
+
+Must also be UUID.
+
+---
+
+### 4. `album_id`
+
+Foreign key to:
+
+```sql
+albums.id
+```
+
+Nullable because not every song belongs to an album.
+
+Example:
+
+- Singles
+- Independent releases
+- Promotional tracks
+
+---
+
+### 5. `cover_image_url`
+
+Fallback image URL when `album_id` is NULL.
+
+Example:
+
+```text
+https://cdn.beats.com/covers/song123.jpg
+```
+
+---
+
+### 6. `duration_ms`
+
+Stores song duration in **milliseconds**.
+
+Example:
+
+```text
+233456 ms
+```
+
+Why milliseconds?
+
+- No floating-point precision issues
+- Easier seeking calculations
+- Better chunk calculations during playback
+
+---
+
+### 7. `language`
+
+Currently storing **one dominant language only**.
+
+Although some songs are multilingual, usually one language dominates.
+
+Using ENUM for strict validation.
+
+Supported values:
+
+| Code | Language |
+|------|----------|
+| `hi` | Hindi |
+| `en` | English |
+| `hr` | Haryanvi |
+| `pn` | Punjabi |
+
+---
+
+### 8. `release_date`
+
+Stored as:
+
+```sql
+DATE
+```
+
+Only the date matters.
+
+No need to store time.
+
+---
+
+### 9. `created_at`
+
+Stored as:
+
+```sql
+TIMESTAMPTZ
+```
+
+Meaning:
+
+```text
+Timestamp with timezone
+```
+
+Stored internally in **UTC**.
+
+Example:
+
+```text
+UTC = Coordinated Universal Time
+IST = UTC + 5:30
+```
+
+---
+
+# Table 2: `artists`
+
+Stores artist metadata.
+
+## Schema
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `name` | TEXT |
+| `bio` | TEXT |
+| `profile_image_url` | TEXT |
+| `created_at` | TIMESTAMPTZ |
+
+---
+
+## Important Notes
+
+### `profile_image_url`
+
+Stored in **CDN**.
+
+CDN = **Content Delivery Network**
+
+Why not database?
+
+Because databases are not optimized for:
+
+- Large binary files
+- Fast global image delivery
+- Caching
+
+CDN provides:
+
+- Low latency
+- Global caching
+- Reduced backend load
+
+---
+
+# Table 3: `albums`
+
+Stores album metadata.
+
+## Schema
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `title` | TEXT |
+| `cover_image_url` | TEXT |
+| `release_date` | DATE |
+| `created_at` | TIMESTAMPTZ |
+
+---
+
+# Table 4: `audio_variants`
+
+Stores playable encoded versions of tracks.
+
+Each track can have multiple variants.
+
+Example:
+
+```text
+Track: Shape of You
+Variants:
+- OGG 96 kbps
+- OGG 160 kbps
+- OGG 320 kbps
+```
+
+---
+
+## Schema
+
+| Column | Type |
+|--------|------|
+| `id` | UUID |
+| `track_id` | UUID |
+| `codec` | ENUM |
+| `bitrate_kbps` | INT |
+| `sample_rate_hz` | INT |
+| `channels` | INT |
+| `duration_ms` | BIGINT |
+| `file_url` | TEXT |
+| `created_at` | TIMESTAMPTZ |
+
+---
+
+# Audio Variant Details
+
+---
+
+## 1. `id`
+
+UUID primary key.
+
+---
+
+## 2. `track_id`
+
+Foreign key to:
+
+```sql
+tracks.id
+```
+
+---
+
+## 3. `codec`
+
+Codec = **Compressor + Decompressor**
+
+Raw audio is extremely large.
+
+Example:
+
+```text
+5-minute WAV file → 50–60 MB
+```
+
+Codec compresses during storage and decompresses during playback.
+
+---
+
+### Supported codecs
+
+#### MP3
+
+- Oldest
+- Widest device support
+
+---
+
+#### AAC
+
+- Successor of MP3
+- Better compression
+- Common on iOS devices
+
+---
+
+#### OGG (Preferred)
+
+Current choice.
+
+Important:
+
+```text
+OGG = container
+Opus = actual codec inside
+```
+
+Benefits:
+
+- Excellent quality
+- Better compression
+- Open standard
+
+---
+
+## 4. `bitrate_kbps`
+
+Controls audio quality.
+
+Current supported bitrates:
+
+```text
+96 kbps
+160 kbps
+320 kbps
+```
+
+Meaning:
+
+```text
+Bits consumed per second during playback
+```
+
+Note:
+
+```text
+1 kbps = 1000 bits/sec
+```
+
+Not bytes.
+
+---
+
+## 5. `sample_rate_hz`
+
+Current value:
+
+```text
+44,100 Hz
+```
+
+Represents how many audio samples are captured per second.
+
+Human hearing range:
+
+```text
+20 Hz → 20,000 Hz
+```
+
+According to **Nyquist theorem**:
+
+```text
+Sample rate ≥ 2 × max audible frequency
+```
+
+Hence:
+
+```text
+2 × 20,000 = 40,000+
+```
+
+So 44.1 kHz is standard.
+
+---
+
+## 6. `channels`
+
+Current:
+
+```text
+2
+```
+
+Possible values:
+
+- `1` → Mono
+- `2` → Stereo
+
+Stereo creates spatial sound.
+
+Example:
+
+- Left channel → guitar louder
+- Right channel → vocals louder
+
+Gives more natural listening.
+
+---
+
+## 7. `duration_ms`
+
+Different from `tracks.duration_ms`.
+
+### `tracks.duration_ms`
+
+Logical duration shown in:
+
+- UI
+- Metadata
+- Search results
+
+---
+
+### `audio_variants.duration_ms`
+
+Actual playable duration of encoded file.
+
+Different codecs introduce tiny differences.
+
+Example:
+
+```text
+Track metadata: 233 sec
+MP3: 233.01 sec
+OGG: 232.98 sec
+AAC: 233.05 sec
+```
+
+Used during:
+
+- Playback
+- Seeking
+- Buffer calculations
+
+---
+
+## 8. `file_url`
+
+Stores streaming entry point.
+
+We are using:
+
+# Segment-Based Streaming ✅
+
+---
+
+# Streaming Approaches
+
+---
+
+## 1. Byte-Range Streaming
+
+Traditional streaming method.
+
+Client requests chunks of the same file.
+
+Example:
+
+```text
+GET bytes 0-200KB
+GET bytes 200-400KB
+```
+
+HTTP supports:
+
+```text
+Range Requests
+```
+
+Advantages:
+
+- Easy implementation
+- No preprocessing
+
+Limitations:
+
+- Harder adaptive bitrate switching
+- Less CDN-friendly
+- Resume/seek handling less flexible
+
+---
+
+## 2. Segment-Based Streaming (Chosen)
+
+Audio is pre-cut into small segments.
+
+Example:
+
+```text
+segment_001.ts
+segment_002.ts
+segment_003.ts
+```
+
+Each segment:
+
+```text
+2–6 seconds
+```
+
+Independent files stored in CDN.
+
+---
+
+### `file_url` points to Manifest File
+
+It does **not** point directly to the audio.
+
+Example:
+
+```text
+https://cdn.beats.com/audio/track123/playlist.m3u8
+```
+
+---
+
+## What is a Manifest File?
+
+A small text file containing:
+
+- Total duration
+- Codec
+- Bitrate
+- Segment locations
+
+Example:
+
+```text
+#EXTM3U
+segment1.ts
+segment2.ts
+segment3.ts
+```
+
+Benefits:
+
+- Better buffering
+- Adaptive streaming
+- Easy bitrate switching
+- Excellent CDN caching
+- Better seek/resume support
+
+---
+
+## 9. `created_at`
+
+Stored as:
+
+```sql
+TIMESTAMPTZ
+```
+
+---
+
+# Track Service Request Flow
+
+Application follows:
+
+```text
+Route
+   ↓
+Handler
+   ↓
+Service
+   ↓
+Repository
+   ↓
+Database
+   ↓
+Repository
+   ↓
+Service
+   ↓
+Handler
+   ↓
+Response
+```
+
+---
+
+# Summary
+
+Track Service is responsible for:
+
+- Managing song metadata
+- Managing artist and album metadata
+- Managing playable audio variants
+- Storing streaming manifest URLs
+- Serving metadata to playback and discovery systems
+
+It acts as the central metadata authority for the BEATS platform.
