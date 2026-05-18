@@ -8,10 +8,6 @@ import (
 func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 	mux.HandleFunc("/tracks", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodPost:
-			{
-				h.CreateTrack(w, r)
-			}
 		case http.MethodGet:
 			{
 				h.ListTracks(w, r)
@@ -44,17 +40,7 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 			}
 			return
 		}
-
-		// /tracks/{id}/audio-variants
-		if len(parts) == 2 && parts[1] == "audio-variants" {
-			switch r.Method {
-			case http.MethodGet:
-				h.ListAudioVariantsByTrack(w, r, trackID)
-			default:
-				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			}
-			return
-		}
+		
 		http.NotFound(w, r)
 	})
 }

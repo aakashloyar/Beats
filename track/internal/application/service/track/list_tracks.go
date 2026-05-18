@@ -37,7 +37,7 @@ func (s *ListTracksService) Execute(ctx context.Context, input in.ListTracksInpu
 			CoverImageURL: each.CoverImageURL,
 			DurationMS:    each.DurationMS,
 			Language:      each.Language,
-			ReleaseDate:   each.ReleaseDate,
+			ReleasedAt:    each.ReleasedAt,
 			CreatedAt:     each.CreatedAt,
 		}
 		tracks = append(tracks, track)

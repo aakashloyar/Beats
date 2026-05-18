@@ -224,6 +224,14 @@ Important Points
 -> chunk stored in memory 
 -> https supports range requests
 -> no need to precut files
+-> ok so here is byte range streaming
+-> basically let us see how it is working 
+-> take a example -> abcdefgh... is the data
+-> it will flow continuously depending on network 
+-> it does not work like this ki client ask for this specific kb packet based on internet
+-> it is a continuous flow like water and client consumes it 
+-> so basically here suppose you want to resume playing at some timestamp 
+-> you cannnot use it this is good for something like radio 
 
 ***  Segment Based streaming ***
 -> in this audio is pre-cut into smaller pieces
@@ -231,10 +239,11 @@ Important Points
 -> file_url does not point to audio
 -> it points to manifest file
 
+
+# Note :- We will move with segment based streaming 
 -> what is a manifest file
 -> it is a text file 
 -> contains -> song duration, codec, bitrate, where segments are
-
 
 
 9. created_at

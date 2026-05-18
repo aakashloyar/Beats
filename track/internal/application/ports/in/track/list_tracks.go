@@ -2,7 +2,7 @@ package in
 
 import (
 	"context"
-	"github.com/aakashloyar/beats/track/internal/domain"
+	"github.com/aakashloyar/beats/config"
 	"time"
 )
 
@@ -21,8 +21,8 @@ type ListTracksOutput struct {
 	AlbumID       *string
 	CoverImageURL *string
 	DurationMS    int64
-	Language      domain.Language
-	ReleaseDate   *time.Time
+	Language      []config.Language
+	ReleasedAt    *time.Time
 	CreatedAt     time.Time
 }
 

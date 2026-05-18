@@ -2,9 +2,10 @@ package postgres
 
 import (
 	"database/sql"
+	"strings"
 	"github.com/aakashloyar/beats/track/internal/application/ports/out"
 	"github.com/aakashloyar/beats/track/internal/domain"
-	"strings"
+	"github.com/lib/pq"
 )
 
 type TrackRepository struct {
@@ -26,7 +27,7 @@ func (r *TrackRepository) Save(track domain.Track) error {
 			cover_image_url,
 			duration_ms,
 			language,
-			release_data,
+			released_at,
 			created_at
 		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)	
@@ -39,8 +40,8 @@ func (r *TrackRepository) Save(track domain.Track) error {
 		track.AlbumID,
 		track.CoverImageURL,
 		track.DurationMS,
-		track.Language,
-		track.ReleaseDate,
+		pq.Array(track.Language),
+		track.ReleasedAt,
 		track.CreatedAt,
 	)
 	return err
@@ -56,7 +57,7 @@ func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 			coverimage_url,
 			duration_ms,
 			language,
-			release_date,
+			released_at,
 			created_at
 		FROM Tracks
 		WHERE id = $1	
@@ -72,7 +73,7 @@ func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 		&track.CoverImageURL,
 		&track.DurationMS,
 		&track.Language,
-		&track.ReleaseDate,
+		&track.ReleasedAt,
 		&track.CreatedAt,
 	)
 
@@ -89,7 +90,7 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 			title,
 			artist_id,
 			album_id,
-			coverimage_url,
+			cover_image_url,
 			duration_ms,
 			language,
 			release_date,
@@ -116,6 +117,15 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 		conditions = append(conditions, "album_id = ?")
 		args = append(args, input.AlbumID)
 	}
+
+	if len(*input.Language) > 0 {
+		conditions = append(
+			conditions,
+			"language && ?",
+		)
+		args = append(args, pq.Array(input.Language))
+	}
+
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
@@ -151,8 +161,8 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 			&track.AlbumID,
 			&track.CoverImageURL,
 			&track.DurationMS,
-			&track.Language,
-			&track.ReleaseDate,
+			pq.Array(&track.Language),
+			&track.ReleasedAt,
 			&track.CreatedAt,
 		)
 		if err != nil {
@@ -163,54 +173,4 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 	}
 
 	return tracks, nil
-}
-func (r *TrackRepository) ListAudioVariantsByTrack(trackID string) ([]domain.AudioVariant, error) {
-	query := `
-		SELECT
-			id,
-			track_id,
-			codec,
-			bitrate_kbps,
-			sample_rate_hz,
-			channels,
-			duration_ms,
-			file_url,
-			created_at
-		FROM audio_variants
-		WHERE track_id = $1
-		ORDER BY bitrate_kbps ASC
-	`
-
-	rows, err := r.db.Query(query, trackID)
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var variants []domain.AudioVariant
-
-	for rows.Next() {
-		var v domain.AudioVariant
-		err := rows.Scan(
-			&v.ID,
-			&v.TrackID,
-			&v.Codec,
-			&v.BitrateKbps,
-			&v.SampleRateHz,
-			&v.Channels,
-			&v.DurationMs,
-			&v.FileURL,
-			&v.CreatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		variants = append(variants, v)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return variants, nil
 }

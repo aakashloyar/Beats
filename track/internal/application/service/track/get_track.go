@@ -27,7 +27,7 @@ func (s *GetTrackService) Execute(ctx context.Context, input in.GetTrackInput) (
 		CoverImageURL: x.CoverImageURL,
 		DurationMS:    x.DurationMS,
 		Language:      x.Language,
-		ReleaseDate:   x.ReleaseDate,
+		ReleasedAt:    x.ReleasedAt,
 		CreatedAt:     x.CreatedAt,
 	}
 	return track, nil

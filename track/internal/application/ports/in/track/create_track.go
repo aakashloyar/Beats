@@ -2,24 +2,21 @@ package in
 
 import (
 	"context"
-	"github.com/aakashloyar/beats/track/internal/domain"
+	"github.com/aakashloyar/beats/config"
 	"time"
 )
 
 type CreateTrackInput struct {
+	ID            string
 	Title         string
 	ArtistID      string
 	AlbumID       *string
 	CoverImageURL *string
 	DurationMS    int64
-	Language      domain.Language
-	ReleaseDate   *time.Time
-}
-
-type CreateTrackOutput struct {
-	TrackID string
+	Language      []config.Language
+	ReleasedAt    *time.Time
 }
 
 type CreateTrackService interface {
-	Execute(ctx context.Context, input CreateTrackInput) (CreateTrackOutput, error)
+	Execute(ctx context.Context, input CreateTrackInput) error
 }

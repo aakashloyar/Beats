@@ -22,24 +22,24 @@ func NewCreateTrackService(trackRepo out.TrackRepository, idGen domain.IDGenerat
 	}
 }
 
-func (s *CreateTrackService) Execute(ctx context.Context, input in.CreateTrackInput) (in.CreateTrackOutput, error) {
+func (s *CreateTrackService) Execute(ctx context.Context, input in.CreateTrackInput) error {
 	if input.Title == "" {
-		return in.CreateTrackOutput{}, errors.New("Title is required")
+		return errors.New("Title is required")
 	}
 	track := domain.Track{
-		ID:            s.idGen.NewID(),
+		ID:            input.ID,
 		Title:         input.Title,
 		ArtistID:      input.ArtistID,
 		AlbumID:       input.AlbumID,
 		CoverImageURL: input.CoverImageURL,
 		DurationMS:    input.DurationMS,
 		Language:      input.Language,
-		ReleaseDate:   input.ReleaseDate,
+		ReleasedAt:    input.ReleasedAt,
 		CreatedAt:     s.clock.Now(),
 	}
 	if err := s.trackRepo.Save(track); err != nil {
-		return in.CreateTrackOutput{}, err
+		return err
 	}
-	return in.CreateTrackOutput{TrackID: track.ID}, nil
+	return nil
 
 }

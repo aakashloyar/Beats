@@ -1,21 +1,23 @@
 package main
 
 import (
-	httpalbum "github.com/aakashloyar/beats/track/internal/adapters/in/http/album"
-	httpartist "github.com/aakashloyar/beats/track/internal/adapters/in/http/artist"
-	httpaudioVariant "github.com/aakashloyar/beats/track/internal/adapters/in/http/audio_variant"
-	httptrack "github.com/aakashloyar/beats/track/internal/adapters/in/http/track"
-	postgres "github.com/aakashloyar/beats/track/internal/adapters/out/postgres"
+	httpalbum "github.com/aakashloyar/beats/track/internal/adapter/in/http/album"
+	httpartist "github.com/aakashloyar/beats/track/internal/adapter/in/http/artist"
+	httptrack "github.com/aakashloyar/beats/track/internal/adapter/in/http/track"
+	postgres "github.com/aakashloyar/beats/track/internal/adapter/out/postgres"
 	"github.com/aakashloyar/beats/track/internal/application/ports/out/system"
 	albumsvc "github.com/aakashloyar/beats/track/internal/application/service/album"
 	artistsvc "github.com/aakashloyar/beats/track/internal/application/service/artist"
-	audioVariantsvc "github.com/aakashloyar/beats/track/internal/application/service/audio_variant"
 	tracksvc "github.com/aakashloyar/beats/track/internal/application/service/track"
+	kafkaConsumer "github.com/aakashloyar/beats/track/internal/adapter/in/kafka_consumer"
 	"log"
 	"net/http"
+	"context"
 )
 
 func main() {
+
+	ctx := context.Background()
 
 	config := postgres.Config{
 		Host:     "",
@@ -38,16 +40,14 @@ func main() {
 	trackRepo := postgres.NewTrackRepository(db)
 	artistRepo := postgres.NewArtistRepository(db)
 	albumRepo := postgres.NewAlbumRepository(db)
-	audioVariantRepo := postgres.NewAudioVariantRepository(db)
 
 	//track services
 	createtrackService := tracksvc.NewCreateTrackService(trackRepo, idGen, clock)
 	gettrackService := tracksvc.NewGetTrackService(trackRepo)
 	listtracksService := tracksvc.NewListTracksService(trackRepo)
-	listaudioVariantsByTrackService := tracksvc.NewListAudioVariantsByTrackService(trackRepo)
 
 	//track handler
-	trackHandler := httptrack.NewHandler(createtrackService, gettrackService, listtracksService, listaudioVariantsByTrackService)
+	trackHandler := httptrack.NewHandler(createtrackService, gettrackService, listtracksService)
 
 	//artist services
 	createartistService := artistsvc.NewCreateTrackService(artistRepo, idGen, clock)
@@ -64,17 +64,24 @@ func main() {
 	//album handler
 	albumHandler := httpalbum.NewHandler(createablumService, getalbumService, listalbumsService)
 
-	//audio_variant services
-	createaudioVariantService := audioVariantsvc.NewCreateAudioVariantService(audioVariantRepo, idGen, clock)
 
-	//audio_variant handler
-	audioVariantHandler := httpaudioVariant.NewHandler(createaudioVariantService)
+	kafkaConsumerConfig := kafkaConsumer.Config{
+		Brokers:  []string{"localhost:9092"},
+		Topic:    "upload-completed",
+		ClientID: "ingestion-service",
+	}
+
+	consumer, err := kafkaConsumerConfig.NewConsumer(createtrackService) 
+	if err != nil {
+		log.Fatal(err)
+	}
+	consumer.Start(ctx)
+	defer consumer.Close()
 
 	mux := http.NewServeMux()
 	httptrack.RegisterRoutes(mux, trackHandler)
 	httpartist.RegisterRoutes(mux, artistHandler)
 	httpalbum.RegisterRoutes(mux, albumHandler)
-	httpaudioVariant.RegisterRoutes(mux, audioVariantHandler)
 
 	http.ListenAndServe(":8080", mux)
 }
