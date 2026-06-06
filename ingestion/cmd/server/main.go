@@ -1,22 +1,24 @@
 package main
 
 import (
-	"net/http"
-	"log"
 	"context"
-	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/s3"
-	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/postgres"
-	"github.com/aakashloyar/beats/ingestion/internal/application/ports/out/system"
-	uploadSvc "github.com/aakashloyar/beats/ingestion/internal/application/service/upload"
-	chunkSvc "github.com/aakashloyar/beats/ingestion/internal/application/service/chunk"
-	httpUpload "github.com/aakashloyar/beats/ingestion/internal/adapter/in/http/upload"
+	"log"
+	"net/http"
+	"github.com/aakashloyar/beats/ingestion/config"
+
 	httpChunk "github.com/aakashloyar/beats/ingestion/internal/adapter/in/http/chunk"
+	httpUpload "github.com/aakashloyar/beats/ingestion/internal/adapter/in/http/upload"
 	kafkaProducer "github.com/aakashloyar/beats/ingestion/internal/adapter/out/kafka-producer"
+	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/postgres"
+	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/s3"
+	"github.com/aakashloyar/beats/ingestion/internal/application/ports/out/system"
+	chunkSvc "github.com/aakashloyar/beats/ingestion/internal/application/service/chunk"
+	uploadSvc "github.com/aakashloyar/beats/ingestion/internal/application/service/upload"
 )
 func main() {
 
-
 	ctx := context.Background()
+
 	postgresConfig := postgres.Config{
 		Host:     "",
 		Port:     123,
@@ -26,20 +28,21 @@ func main() {
 		SSLMode:  "",
 	}
 
+	
 	db, err := postgresConfig.NewDB()
 
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
 	}
 
-	s3Config := s3.Config {
-		Region: "ap-south-1",
-		Bucket: "your-bucket-name",
+	s3Config := s3.Config{
+		Region: config.App.S3.Region,
+		Bucket: config.App.S3.Bucket,
 	}
 
 	s3Client, err := s3Config.NewS3Client(ctx)
 
-	s3Storage :=  s3.NewS3Storage(s3Client.Client,s3Config.Bucket)
+	s3Storage :=  s3.NewS3Storage(s3Client.Client, s3Config.Bucket)
 
 	kafkaConfig := kafkaProducer.Config{
 		Brokers:  []string{"localhost:9092"},
