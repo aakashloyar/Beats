@@ -1,0 +1,9 @@
+main.txt
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Optional: allow example env file
+!.env.example
