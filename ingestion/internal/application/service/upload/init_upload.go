@@ -27,7 +27,7 @@ func NewInitUploadService(uploadRepo out.UploadRespository, storage out.Storage,
 
 func (s *InitUploadService) Execute(ctx context.Context, input in.InitUploadInput) (in.InitUploadOutput, error) {
 
-	maxChunkSize := config.App.Upload.MaxChunkSize
+	maxChunkSize := config.Upload.MaxChunkSize
 	uploadID := s.idGen.NewID()
 
 	totalChunks := int(math.Ceil(float64(input.FileSize) / float64(maxChunkSize)))

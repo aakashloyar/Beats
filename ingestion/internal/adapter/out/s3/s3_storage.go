@@ -47,7 +47,7 @@ func (s *S3Storage) GeneratePresignedPartURL(ctx context.Context, key string, up
 		Key:        &key,
 		UploadId:   &uploadID,
 		PartNumber: &partNumber,
-	}, s3.WithPresignExpires(time.Duration(config.App.Upload.PresignExpirty) * time.Minute))
+	}, s3.WithPresignExpires(time.Duration(config.Upload.PresignExpirty) * time.Minute))
 
 	if err != nil {
 		return "", err
