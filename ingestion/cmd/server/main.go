@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"log"
 	"context"
+	"github.com/aakashloyar/beats/ingestion/config"
 	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/s3"
 	"github.com/aakashloyar/beats/ingestion/internal/adapter/out/postgres"
 	"github.com/aakashloyar/beats/ingestion/internal/application/ports/out/system"
@@ -32,14 +33,14 @@ func main() {
 		log.Fatalf("failed to open DB: %v", err)
 	}
 
-	s3Config := s3.Config {
-		Region: "ap-south-1",
-		Bucket: "your-bucket-name",
+	s3Config := s3.Config{
+		Region: config.App.S3.Region,
+		Bucket: config.App.S3.Bucket,
 	}
 
 	s3Client, err := s3Config.NewS3Client(ctx)
 
-	s3Storage :=  s3.NewS3Storage(s3Client.Client,s3Config.Bucket)
+	s3Storage :=  s3.NewS3Storage(s3Client.Client, s3Config.Bucket)
 
 	kafkaConfig := kafkaProducer.Config{
 		Brokers:  []string{"localhost:9092"},
