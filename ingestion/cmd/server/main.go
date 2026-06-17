@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"net/http"
 	"log"
 	"context"
@@ -18,13 +19,18 @@ func main() {
 
 
 	ctx := context.Background()
+
+	port, err := strconv.Atoi(config.App.Postgres.Port)
+	if err != nil {
+		log.Fatalf("invalid POSTGRES_PORT: %v", err)
+	}
 	postgresConfig := postgres.Config{
-		Host:     "",
-		Port:     123,
-		User:     "",
-		Password: "",
-		DBName:   "",
-		SSLMode:  "",
+		Host:     config.App.Postgres.Host,
+		Port:     port,
+		User:     config.App.Postgres.User,
+		Password: config.App.Postgres.Password,
+		DBName:   config.App.Postgres.DBName,
+		SSLMode:  config.App.Postgres.SSLMode,
 	}
 
 	db, err := postgresConfig.NewDB()

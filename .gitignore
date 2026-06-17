@@ -7,3 +7,5 @@ main.txt
 
 # Optional: allow example env file
 !.env.example
+
+*.pem
