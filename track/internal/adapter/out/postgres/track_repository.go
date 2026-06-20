@@ -36,7 +36,7 @@ func (r *TrackRepository) Save(track domain.Track) error {
 		query,
 		track.ID,
 		track.Title,
-		track.ArtistID,
+		track.ArtistIDs,
 		track.AlbumID,
 		track.CoverImageURL,
 		track.DurationMS,
@@ -68,7 +68,7 @@ func (r *TrackRepository) FindByID(trackID string) (domain.Track, error) {
 	err := row.Scan(
 		&track.ID,
 		&track.Title,
-		&track.ArtistID,
+		&track.ArtistIDs,
 		&track.AlbumID,
 		&track.CoverImageURL,
 		&track.DurationMS,
@@ -108,9 +108,9 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 		args = append(args, "%"+*input.Title+"%")
 	}
 
-	if input.ArtistID != nil {
-		conditions = append(conditions, "artist_id = ?")
-		args = append(args, input.ArtistID)
+	if input.ArtistIDs != nil {
+		conditions = append(conditions, "artist_id = ANY(?)")
+		args = append(args, pq.StringArray(*input.ArtistIDs))
 	}
 
 	if input.AlbumID != nil {
@@ -157,7 +157,7 @@ func (r *TrackRepository) ListTracks(input domain.TrackFilter) ([]domain.Track, 
 		err := rows.Scan(
 			&track.ID,
 			&track.Title,
-			&track.ArtistID,
+			&track.ArtistIDs,
 			&track.AlbumID,
 			&track.CoverImageURL,
 			&track.DurationMS,

@@ -29,7 +29,7 @@ func (s *CreateTrackService) Execute(ctx context.Context, input in.CreateTrackIn
 	track := domain.Track{
 		ID:            input.ID,
 		Title:         input.Title,
-		ArtistID:      input.ArtistID,
+		ArtistIDs:   input.ArtistIDs,
 		AlbumID:       input.AlbumID,
 		CoverImageURL: input.CoverImageURL,
 		DurationMS:    input.DurationMS,

@@ -11,7 +11,7 @@ import (
 type GetTrackResponse struct {
 	ID            string            `json:"id"`
 	Title         string            `json:"title"`
-	ArtistID      string            `json:"artist_id"`
+	ArtistIDs     []string          `json:"artist_ids"`
 	AlbumID       *string           `json:"album_id,omitempty"`
 	CoverImageURL *string           `json:"cover_image_url,omitempty"`
 	DurationMS    int64             `json:"duration_ms"`
@@ -55,7 +55,7 @@ func (h *Handler) GetTrackByID(w http.ResponseWriter, r *http.Request, trackID s
 	resp := GetTrackResponse{
 		ID:            out.ID,
 		Title:         out.Title,
-		ArtistID:      out.ArtistID,
+		ArtistIDs:     out.ArtistIDs,
 		AlbumID:       out.AlbumID,
 		CoverImageURL: out.CoverImageURL,
 		DurationMS:    out.DurationMS,
@@ -72,11 +72,11 @@ func (h *Handler) ListTracks(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
 	input := in.ListTracksInput{
-		Title:    query.Get("title"),
-		ArtistID: query.Get("artist_id"),
-		AlbumID:  query.Get("album_id"),
-		Limit:    query.Get("limit"),
-		Offset:   query.Get("offset"),
+		Title:     query.Get("title"),
+		ArtistIDs: []string{query.Get("artist_id")},
+		AlbumID:   query.Get("album_id"),
+		Limit:     query.Get("limit"),
+		Offset:    query.Get("offset"),
 	}
 
 	out, err := h.listTracksService.Execute(r.Context(), input)
@@ -90,7 +90,7 @@ func (h *Handler) ListTracks(w http.ResponseWriter, r *http.Request) {
 		curr := GetTrackResponse{
 			ID:            each.ID,
 			Title:         each.Title,
-			ArtistID:      each.ArtistID,
+			ArtistIDs:     each.ArtistIDs,
 			AlbumID:       each.AlbumID,
 			CoverImageURL: each.CoverImageURL,
 			DurationMS:    each.DurationMS,

@@ -9,7 +9,7 @@ import (
 type CreateTrackInput struct {
 	ID            string
 	Title         string
-	ArtistID      string
+	ArtistIDs     []string
 	AlbumID       *string
 	CoverImageURL *string
 	DurationMS    int64

@@ -76,7 +76,7 @@ func (s *EncodingService) Execute(ctx context.Context, event in.UploadCompletedE
 	err = s.publisher.PublishUploadCompleted(ctx, out.EncodeCompletedEvent{
 		ID:            event.UploadID,
 		Title:         event.Title,
-		ArtistID:      event.ArtistID,
+		ArtistIDs:      event.ArtistIDs,
 		AlbumID:       event.AlbumID,
 		CoverImageURL: event.CoverImageURL,
 		ReleasedAt:    event.ReleasedAt,

@@ -56,7 +56,7 @@ func (s *InitUploadService) Execute(ctx context.Context, input in.InitUploadInpu
 	upload := domain.Upload{
 		ID:              uploadID,
 		Title:           input.Title,
-		ArtistID:        input.ArtistID,
+		ArtistIDs:       input.ArtistIDs,
 		AlbumID:         input.AlbumID,
 		CoverImageURL:   input.CoverImageURL,
 		ReleasedAt:      input.ReleasedAt,

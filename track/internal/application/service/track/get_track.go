@@ -22,7 +22,7 @@ func (s *GetTrackService) Execute(ctx context.Context, input in.GetTrackInput) (
 	}
 	track := in.GetTrackOutput{
 		ID:            x.ID,
-		ArtistID:      x.ArtistID,
+		ArtistIDs:     x.ArtistIDs,
 		AlbumID:       x.AlbumID,
 		CoverImageURL: x.CoverImageURL,
 		DurationMS:    x.DurationMS,

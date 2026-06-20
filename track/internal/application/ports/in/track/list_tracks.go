@@ -7,17 +7,17 @@ import (
 )
 
 type ListTracksInput struct {
-	Title    string
-	ArtistID string
-	AlbumID  string
-	Limit    string
-	Offset   string
+	Title     string
+	ArtistIDs []string
+	AlbumID   string
+	Limit     string
+	Offset    string
 }
 
 type ListTracksOutput struct {
 	ID            string
 	Title         string
-	ArtistID      string
+	ArtistIDs     []string
 	AlbumID       *string
 	CoverImageURL *string
 	DurationMS    int64

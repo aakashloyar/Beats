@@ -6,8 +6,8 @@ import (
 )
 
 type InitUploadInput struct {
-	Title         string 
-	ArtistID      string
+	Title         string
+	ArtistIDs     []string
 	AlbumID       *string 
 	CoverImageURL *string 
 	ReleasedAt    *time.Time

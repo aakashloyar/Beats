@@ -14,7 +14,7 @@ const (
 type Upload struct {
 	ID              string
 	Title           string 
-	ArtistID        string
+	ArtistIDs       []string
 	AlbumID         *string 
 	CoverImageURL   *string 
 	FileName        string

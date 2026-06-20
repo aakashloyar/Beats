@@ -1,11 +1,24 @@
 package kafkaconsumer
 
 import (
+	"time"
+	"github.com/aakashloyar/beats/config"
 	"context"
 	"encoding/json"
 	"log"
 	"github.com/aakashloyar/beats/track/internal/application/ports/in/track"
 )
+
+type SaveEncodedEventRequest struct {
+	ID            string          `json:"upload_id"`
+	Title         string          `json:"title"`
+	ArtistIDs     []string        `json:"artist_ids"`
+	AlbumID       *string         `json:"album_id,omitempty"`
+	CoverImageURL *string         `json:"cover_image_url,omitempty"`
+	ReleasedAt    *time.Time      `json:"released_at,omitempty"`
+	Language      config.Language `json:"language"`
+	StreamKey     string          `json:"storage_key"`
+}
 
 func (c *Consumer) Start(ctx context.Context) error {
 	for {
@@ -22,14 +35,23 @@ func (c *Consumer) Start(ctx context.Context) error {
 		for !iter.Done() {
 			record := iter.Next()
 
-			var event in.CreateTrackInput
+			var event SaveEncodedEventRequest
 
 			if err := json.Unmarshal(record.Value, &event); err != nil {
 				log.Printf("unmarshal error: %v", err)
 				continue
 			}
 
-			if err := c.createTrackService.Execute(ctx, event); err != nil {
+			var track in.CreateTrackInput = in.CreateTrackInput{
+				ID:            event.ID,
+				Title:         event.Title,
+				ArtistIDs:     event.ArtistIDs,
+				AlbumID:       event.AlbumID,
+				CoverImageURL: event.CoverImageURL,
+				ReleasedAt:    event.ReleasedAt,
+			}
+
+			if err := c.createTrackService.Execute(ctx, track); err != nil {
 				log.Printf("create Track failed: %v", err)
 				continue
 			}

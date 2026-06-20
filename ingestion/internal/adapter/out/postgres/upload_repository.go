@@ -19,7 +19,7 @@ func (r *UploadRepository) Init(upload domain.Upload) error {
 		INSERT INTO uploads {
 			id,
 			title,
-			artist_id,
+			artist_ids,
 			album_id,
 			cover_image_url,
 			file_name,
@@ -31,17 +31,18 @@ func (r *UploadRepository) Init(upload domain.Upload) error {
 			created_at,
 			updated_at
 		}
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
 	_, err := r.db.Exec(
 		query,
 		upload.ID,
 		upload.Title,
-		upload.ArtistID,
+		upload.ArtistIDs,
 		upload.AlbumID,
 		upload.CoverImageURL,
 		upload.FileName,
 		upload.FileSize,
+		upload.Status,
 		upload.StorageUploadID,
 		upload.StorageKey,
 		upload.TotalChunks,
@@ -86,7 +87,7 @@ func (r *UploadRepository) FindByID(uploadID string) (domain.Upload,error) {
 	var upload domain.Upload
 	err := row.Scan(
 		&upload.ID,
-		&upload.ArtistID,
+		&upload.ArtistIDs,
 		&upload.FileName,
 		&upload.FileSize,
 		&upload.Status,

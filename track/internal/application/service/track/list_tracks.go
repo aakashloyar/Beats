@@ -19,10 +19,10 @@ func NewListTracksService(trackRepo out.TrackRepository) in.ListTracksService {
 
 func (s *ListTracksService) Execute(ctx context.Context, input in.ListTracksInput) ([]in.ListTracksOutput, error) {
 	x, err := s.trackRepo.ListTracks(domain.TrackFilter{
-		Title:    &input.Title,
-		ArtistID: &input.ArtistID,
-		AlbumID:  &input.AlbumID,
-		Limit:    &input.Limit,
+		Title:     &input.Title,
+		ArtistIDs: &input.ArtistIDs,
+		AlbumID:   &input.AlbumID,
+		Limit:     &input.Limit,
 		Offset:   &input.Offset,
 	})
 	if err != nil {
@@ -32,7 +32,7 @@ func (s *ListTracksService) Execute(ctx context.Context, input in.ListTracksInpu
 	for _, each := range x {
 		track := in.ListTracksOutput{
 			ID:            each.ID,
-			ArtistID:      each.ArtistID,
+			ArtistIDs:     each.ArtistIDs,
 			AlbumID:       each.AlbumID,
 			CoverImageURL: each.CoverImageURL,
 			DurationMS:    each.DurationMS,

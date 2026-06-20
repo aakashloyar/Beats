@@ -81,7 +81,7 @@ func (s *CompleteUploadService) Execute(ctx context.Context, input in.CompleteUp
 	err = s.publisher.PublishUploadCompleted(ctx,out.UploadCompletedEvent{
 		UploadID:      upload.ID,
 		Title:         upload.Title,
-		ArtistID:      upload.ArtistID,
+		ArtistIDs:      upload.ArtistIDs,
 		AlbumID:       upload.AlbumID,
 		CoverImageURL: upload.CoverImageURL,
 		ReleasedAt:    upload.ReleasedAt,

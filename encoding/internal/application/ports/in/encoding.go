@@ -8,7 +8,7 @@ import (
 type UploadCompletedEvent struct{
 	UploadID      string          `json:"upload_id"`
 	Title         string          `json:"title"`
-	ArtistID      string          `json:"artist_id"`
+	ArtistIDs     []string        `json:"artist_ids"`
 	AlbumID       *string         `json:"album_id,omitempty"`
 	CoverImageURL *string         `json:"cover_image_url,omitempty"`
 	ReleasedAt    *time.Time      `json:"released_at,omitempty"`

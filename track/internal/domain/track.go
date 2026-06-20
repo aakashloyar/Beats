@@ -8,7 +8,7 @@ import (
 type Track struct {
 	ID            string
 	Title         string
-	ArtistID      string
+	ArtistIDs     []string
 	AlbumID       *string
 	CoverImageURL *string
 	DurationMS    int64
@@ -18,10 +18,10 @@ type Track struct {
 }
 
 type TrackFilter struct {
-	Title    *string
-	ArtistID *string
-	AlbumID  *string
-	Language *[]config.Language
-	Limit    *string
-	Offset   *string
+	Title     *string
+	ArtistIDs *[]string
+	AlbumID   *string
+	Language  *[]config.Language
+	Limit     *string
+	Offset    *string
 }

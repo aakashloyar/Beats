@@ -15,7 +15,7 @@ type Handler struct {
 
 type initUploadRequest struct {
 	Title         string          `json:"title"`
-	ArtistID      string          `json:"artist_id"`
+	ArtistIDs     []string        `json:"artist_ids"`
 	AlbumID       *string         `json:"album_id,omitempty"`
 	CoverImageURL *string         `json:"cover_image_url,omitempty"`
 	Language      config.Language `json:"language"`
@@ -30,7 +30,7 @@ type initUploadResponse struct {
 	UploadURLs   []UploadURL `json:"chunks"`
 }
 type UploadURL struct {
-	ChunkNumber int    `json:"chunk_number"`
+	ChunkNumber int   `json:"chunk_number"`
 	URL        string `json:"url"`
 }
 
@@ -54,7 +54,7 @@ func (h *Handler) InitUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	input := in.InitUploadInput{
 		Title:         req.Title,
-		ArtistID:      req.ArtistID,
+		ArtistIDs:     req.ArtistIDs,
 		AlbumID:       req.AlbumID,
 		CoverImageURL: req.CoverImageURL,
 		ReleasedAt:    req.ReleasedAt,
