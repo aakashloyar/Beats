@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	//_ "github.com/lib/pq"
+    _ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Config struct {
@@ -25,13 +25,12 @@ func (cfg Config) NewDB() (*sql.DB, error) {
 		cfg.DBName,
 		cfg.SSLMode,
 	)
-	db, err := sql.Open("postgres", dsn)
-
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
-
 	if err = db.Ping(); err != nil {
+		db.Close()
 		return nil, err
 	}
 	return db, nil
