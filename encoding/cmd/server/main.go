@@ -1,35 +1,38 @@
-package main 
+package main
 
 import (
-	"log"
 	"context"
-	"github.com/aakashloyar/beats/encoding/internal/adapter/out/s3"
+	"log"
+
+	"github.com/aakashloyar/beats/encoding/config"
+	kafkaConsumer "github.com/aakashloyar/beats/encoding/internal/adapter/in/kafka_consumer"
 	decoder "github.com/aakashloyar/beats/encoding/internal/adapter/out/decoder"
 	encoder "github.com/aakashloyar/beats/encoding/internal/adapter/out/encoder"
 	kafkaProducer "github.com/aakashloyar/beats/encoding/internal/adapter/out/kafka_producer"
+	"github.com/aakashloyar/beats/encoding/internal/adapter/out/s3"
 	"github.com/aakashloyar/beats/encoding/internal/application/service"
-	kafkaConsumer "github.com/aakashloyar/beats/encoding/internal/adapter/in/kafka_consumer"
 )
 
 func main() {
 	ctx := context.Background()
 
-	s3Config := s3.Config {
-		Region: "ap-south-1",
-		Bucket: "your-bucket-name",
+	s3Config := s3.Config{
+		Region: config.App.S3.Region,
+		Bucket: config.App.S3.Bucket,
 	}
 
 	s3Client, err := s3Config.NewS3Client(ctx)
 
-	s3Storage :=  s3.NewS3Storage(s3Client.Client,s3Config.Bucket)
+	s3Storage := s3.NewS3Storage(s3Client.Client, s3Config.Bucket)
 
 	kafkaProducerConfig := kafkaProducer.Config{
-		Brokers:  []string{"localhost:9092"},
-		Topic:    "upload-completed",
-		ClientID: "ingestion-service",
+		Brokers:  config.App.KafkaProducer.Brokers,
+		Topic:    config.App.KafkaProducer.Topic,
+		ClientID: config.App.KafkaProducer.ClientID,
 	}
 
-	producer, err := kafkaProducer.NewFranzProducer(kafkaProducerConfig); if err != nil {
+	producer, err := kafkaProducer.NewFranzProducer(kafkaProducerConfig)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -39,16 +42,15 @@ func main() {
 	decoderProbe := decoder.NewFFprobeAdapter()
 	encoderProbe := encoder.NewEncoderAdapter()
 
-	encodingService := service.NewEncodingService(s3Storage, decoderProbe, validator,encoderProbe, producer)
-
+	encodingService := service.NewEncodingService(s3Storage, decoderProbe, validator, encoderProbe, producer)
 
 	kafkaConsumerConfig := kafkaConsumer.Config{
-		Brokers:  []string{"localhost:9092"},
-		Topic:    "upload-completed",
-		ClientID: "ingestion-service",
+		Brokers:  config.App.KafkaConsumer.Brokers,
+		Topic:    config.App.KafkaConsumer.Topic,
+		ClientID: config.App.KafkaConsumer.ClientID,
 	}
 
-	consumer, err := kafkaConsumerConfig.NewConsumer(encodingService) 
+	consumer, err := kafkaConsumerConfig.NewConsumer(encodingService)
 	if err != nil {
 		log.Fatal(err)
 	}
