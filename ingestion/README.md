@@ -324,7 +324,7 @@ POST /ingestion/init-upload
 
 ```go
 type InitUploadRequest struct {
-    ArtistID  string    `json:"artist_id"`
+    ArtistIDs []string  `json:"artist_ids"`
     FileName  string    `json:"file_name"`
     FileSize  int64     `json:"file_size"`
     CreatedAt time.Time `json:"created_at"`
@@ -578,7 +578,7 @@ POST /init
 
 ```go
 type InitUploadRequest struct {
-    ArtistID  string    `json:"artist_id"`
+    ArtistIDs []string  `json:"artist_ids"`
     FileName  string    `json:"file_name"`
     FileSize  int64     `json:"file_size"`
     CreatedAt time.Time `json:"created_at"`
