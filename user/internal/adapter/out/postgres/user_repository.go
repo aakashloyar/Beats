@@ -52,3 +52,15 @@ func (r *UserRepository) FindByID(userID string) (domain.User, error) {
 
 	return user, nil
 }
+
+func (r *UserRepository) ExistsByUsername(username string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE lower(username) = lower($1))`, username).Scan(&exists)
+	return exists, err
+}
+
+func (r *UserRepository) ExistsByEmail(email string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE lower(email) = lower($1))`, email).Scan(&exists)
+	return exists, err
+}

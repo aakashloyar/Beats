@@ -41,6 +41,22 @@ func (s *CreateUserService) Execute(ctx context.Context, input in.CreateUserInpu
 		return in.CreateUserOutput{}, errors.New("invalid email")
 	}
 
+	exists, err := s.userRepo.ExistsByUsername(username)
+	if err != nil {
+		return in.CreateUserOutput{}, err
+	}
+	if exists {
+		return in.CreateUserOutput{}, errors.New("username already exists")
+	}
+
+	exists, err = s.userRepo.ExistsByEmail(email)
+	if err != nil {
+		return in.CreateUserOutput{}, err
+	}
+	if exists {
+		return in.CreateUserOutput{}, errors.New("email already exists")
+	}
+
 	now := s.clock.Now()
 	user := domain.User{
 		ID:        s.idGen.NewID(),
