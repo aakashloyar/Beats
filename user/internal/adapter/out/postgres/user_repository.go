@@ -21,12 +21,13 @@ func (r *UserRepository) Save(user domain.User) error {
 			id,
 			username,
 			email,
-			created_at
+			created_at,
+			updated_at
 		)
-		VALUES ($1, $2, $3, $4)
+		VALUES ($1, $2, $3, $4, $5)
 	`
 
-	_, err := r.db.Exec(query, user.ID, user.Username, user.Email, user.CreatedAt)
+	_, err := r.db.Exec(query, user.ID, user.Username, user.Email, user.CreatedAt, user.UpdatedAt)
 	return err
 }
 
@@ -36,7 +37,8 @@ func (r *UserRepository) FindByID(userID string) (domain.User, error) {
 			id,
 			username,
 			email,
-			created_at
+			created_at,
+			updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -44,7 +46,7 @@ func (r *UserRepository) FindByID(userID string) (domain.User, error) {
 	row := r.db.QueryRow(query, userID)
 
 	var user domain.User
-	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt); err != nil {
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		return domain.User{}, err
 	}
 

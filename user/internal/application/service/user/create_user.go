@@ -41,11 +41,13 @@ func (s *CreateUserService) Execute(ctx context.Context, input in.CreateUserInpu
 		return in.CreateUserOutput{}, errors.New("invalid email")
 	}
 
+	now := s.clock.Now()
 	user := domain.User{
 		ID:        s.idGen.NewID(),
 		Username:  username,
 		Email:     email,
-		CreatedAt: s.clock.Now(),
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	if err := s.userRepo.Save(user); err != nil {

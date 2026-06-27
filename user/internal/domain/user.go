@@ -7,4 +7,5 @@ type User struct {
 	Username  string
 	Email     string
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
